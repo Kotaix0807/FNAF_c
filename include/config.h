@@ -3,13 +3,14 @@
 
 #include <stdbool.h>
 
-#define FPS 60
-#define FRAME_TIME_MS (1000 / FPS)
-
+#define FRAME_TIME_MS(a) (1000 / a)
 #define ASSETS_DIR "assets/"
-#define CONFIG_PATH ASSETS_DIR "config/"
+
+//Directories
+#define CONFIG_DIR ASSETS_DIR "config/"
 #define SFX_DIR ASSETS_DIR "sfx/"
 #define MUSIC_DIR ASSETS_DIR "music/"
+#define SPRITES_DIR ASSETS_DIR "sprites/"
 #define PATH_SIZE(a) sizeof(SFX_DIR) + sizeof(MUSIC_DIR) + sizeof(a)
 
 #define CFG_FILE "hd.ini"

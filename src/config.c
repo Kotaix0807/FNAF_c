@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
+
 #include "config.h"
+#include "tools.h"
 
 GameConfig config = {0};
 
@@ -11,7 +13,7 @@ bool loadConfig(GameConfig *cfg, char *cfg_name)
     FILE *cfg_file = fopen(cfg_name, "r");
     if(!cfg_file)
     {
-        fprintf(stderr, "No se pudo cargar el archivo '%s', no se encontro o no existe\n", cfg_name);
+        printDebug("No se pudo cargar el archivo '%s', no se encontro o no existe\n", cfg_name);
         return false;
     }
     char title[64];
@@ -68,7 +70,7 @@ void printConfig(GameConfig *cfg)
 {
     if(!cfg)
     {
-        fprintf(stderr, "No se pudo leer el archivo de configuracion, no esta, no existe, o esta corrupto\n");
+        printDebug("No se pudo leer el archivo de configuracion, no esta, no existe, o esta corrupto\n");
         return;
     }
     printf("[Video]\n");

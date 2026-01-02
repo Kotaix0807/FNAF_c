@@ -4,10 +4,12 @@
 #include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
+#include "config.h"
 #include "tools.h"
 
-// #define TOOLS_DEBUG
+//#define TOOLS_DEBUG
 
 int binarySearch(int arr[], int left, int right, int key)
 {
@@ -32,16 +34,17 @@ int filesInDir(char *path)
     struct dirent *de;
     if (dr == NULL)
     {
-        fprintf(stderr, "No se pudo abirir '%s'\n", path);
+        printDebug("No se pudo abirir '%s'\n", path);
         return -1;
     }
 
     int count = 0;
     while ((de = readdir(dr)) != NULL)
     {
-        if(strcmp(de->d_name, ".") || strcmp(de->d_name, ".."))
+        if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0)
             count++;
         #ifdef TOOLS_DEBUG
+        printf("[ARCHIVOS DETECTADOS]\n");
         printf("%s\n", de->d_name);
         #endif
     }
@@ -49,45 +52,73 @@ int filesInDir(char *path)
     return count;
 }
 
-char **fillArr(char *path, int *outCount)
+static int hasValidExtension(const char *filename, const char **extensions, int extCount, valid_type type)
 {
-    int fileCount = filesInDir(path);
-    if (fileCount <= 0)
-    {
-        if (outCount)
-            *outCount = 0;
-        return NULL;
-    }
+    if (extensions == NULL || extCount <= 0)
+        return 1;
 
-    char **fileArray = malloc(sizeof(char *) * fileCount);
-    if (fileArray == NULL)
-    {
-        fprintf(stderr, "Error al asignar memoria\n");
-        if (outCount)
-            *outCount = 0;
-        return NULL;
-    }
+    const char *ext = strrchr(filename, '.');
+    if (ext == NULL)
+        return 0;
 
+    for (int i = 0; i < extCount; i++)
+    {
+        if (strcmp(ext, extensions[i]) == 0)
+            return 1;
+    }
+    printDebug("El archivo '%s' no es %s\n", filename, typeAdmited(type));
+    return 0;
+}
+
+char **getFilesFromDir(char *path, int *outCount, const char **extensions, int extCount, valid_type type)
+{
     DIR *dr = opendir(path);
     struct dirent *de;
     if (dr == NULL)
     {
-        fprintf(stderr, "No se pudo abrir '%s'\n", path);
-        free(fileArray);
+        printDebug("No se pudo abrir '%s'\n", path);
         if (outCount)
             *outCount = 0;
         return NULL;
     }
 
+    int capacity = 16;
     int count = 0;
+    char **fileArray = malloc(sizeof(char *) * capacity);
+    if (fileArray == NULL)
+    {
+        printDebug("Error al asignar memoria\n");
+        closedir(dr);
+        if (outCount)
+            *outCount = 0;
+        return NULL;
+    }
+
     while ((de = readdir(dr)) != NULL)
     {
-        if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0)
+        if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0 &&
+            hasValidExtension(de->d_name, extensions, extCount, type))
         {
+            if (count >= capacity)
+            {
+                capacity *= 2;
+                char **tmp = realloc(fileArray, sizeof(char *) * capacity);
+                if (tmp == NULL)
+                {
+                    printDebug("Error al reasignar memoria\n");
+                    freeStringArray(fileArray, count);
+                    closedir(dr);
+                    if (outCount)
+                        *outCount = 0;
+                    return NULL;
+                }
+                fileArray = tmp;
+            }
+
             fileArray[count] = strdup(de->d_name);
             if (fileArray[count] == NULL)
             {
-                fprintf(stderr, "Error al copiar nombre de archivo\n");
+                printDebug("Error al copiar nombre de archivo\n");
                 for (int i = 0; i < count; i++)
                     free(fileArray[i]);
                 free(fileArray);
@@ -105,13 +136,48 @@ char **fillArr(char *path, int *outCount)
         *outCount = count;
     return fileArray;
 }
-#ifdef TOOLS_DEBUG
 
-int main()
+void freeStringArray(char **array, int n)
 {
-    printf("Se leyo %d archivos en '%s'\n", filesInDir(ASSETS_DIR "sfx"), ASSETS_DIR "sfx");
-    return 0;
+    for (int i = 0; i < n; i++)
+    {
+        if(array[i])
+            free(array[i]);
+    }
+    if(array)
+        free(array);
 }
 
+void printDebug(char *error, ...)
+{
+    if(config.debug_mode)
+    {
+        va_list args;
+        va_start(args, error);
+        vfprintf(stderr, error, args);
+        va_end(args);
+    }
+}
+
+char *typeAdmited(valid_type type)
+{
+    switch(type)
+    {
+        case IMAGE:
+            return "imagen";
+        case SOUND:
+            return "sonido";
+    }
+}
+
+#ifdef TOOLS_DEBUG
+
+GameConfig config = {0};  // Definición temporal para el test
+int main()
+{   
+    config.debug_mode = true;
+    printError("Error: %d, %d\n", 5, 3);
+    return 0;
+}
 
 #endif
