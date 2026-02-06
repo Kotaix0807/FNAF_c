@@ -1,5 +1,7 @@
-#include "engine.h"
+//#define MAIN_DEBUG
+#ifndef MAIN_DEBUG
 
+#include "engine.h"
 int main()
 {
     INSTANCE = Game_Init();
@@ -21,3 +23,12 @@ int main()
 	Game_Destroy();
     return 0;
 }
+
+#else
+
+int main()
+{
+    return 0;
+}
+
+#endif

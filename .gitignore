@@ -28,6 +28,7 @@ core
 
 # Archivos de compilación específicos
 compile_flags.txt
+.clangd
 
 # Archivos de sistema
 Thumbs.db

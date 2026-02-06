@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "config.h"
 #include "tools.h"
+#include "config.h"
 
 GameConfig config = {0};
 
@@ -41,6 +41,7 @@ bool loadConfig(GameConfig *cfg, char *cfg_name)
             if(sscanf(line, "vsync=%d", &temp) == 1)
                 cfg->vsync = temp;
             sscanf(line, "fps=%d", &cfg->fps);
+            sscanf(line, "default_monitor=%d", &cfg->defaultMonitor);
         }
         else if(!strcmp(title, "Audio"))
         {
@@ -65,7 +66,6 @@ bool loadConfig(GameConfig *cfg, char *cfg_name)
     return true;
 }
 
-
 void printConfig(GameConfig *cfg)
 {
     if(!cfg)
@@ -79,7 +79,8 @@ void printConfig(GameConfig *cfg)
     printf("height=%d\n", cfg->WIN_H);
     printf("fullscreen=%d\n", cfg->fullscreen);
     printf("vsync=%d\n", cfg->vsync);
-    printf("fps=%d\n\n", cfg->fps);
+    printf("fps=%d\n", cfg->fps);
+    printf("default_monitor=%d\n\n", cfg->defaultMonitor);
     printf("[Audio]\n");
     printf("master_volume=%d\n", cfg->master_volume);
     printf("music_volume=%d\n", cfg->music_volume);
@@ -94,9 +95,9 @@ void printConfig(GameConfig *cfg)
 #ifdef CFG_DEBUG
 int main()
 {
-    GameConfig fnaf_cfg = {0};
-    loadConfig(&fnaf_cfg, CONFIG_PATH "settings.ini");
-    printConfig(&fnaf_cfg);
+    GameConfig gamecfg = {0};
+    loadConfig(&gamecfg, CONFIG_DIR "hd.ini");
+    printConfig(&gamecfg);
 
     return 0;
 }

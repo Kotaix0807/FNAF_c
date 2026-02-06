@@ -1,6 +1,4 @@
 #include "img.h"
-#include "SDL_rect.h"
-#include "SDL_render.h"
 #include "engine.h"
 #include "tools.h"
 #include <stdio.h>
@@ -32,9 +30,9 @@ texture initTextureLib(char *path)
 		return current;
 	}
 
-	current.array_textures = malloc(n * sizeof(SDL_Texture *));
+	current.textures_array = malloc(n * sizeof(SDL_Texture *));
 	current.rects = malloc(n * sizeof(SDL_Rect *));
-	if(!current.array_textures)
+	if(!current.textures_array)
 	{
 		printDebug("No se pudo asignar memoria para texturas\n");
 		freeStringArray(textures_array, n);
@@ -59,7 +57,7 @@ texture initTextureLib(char *path)
 			freeTextureLib(&current);
 			break;
 		}
-		current.array_textures[i] = SDL_CreateTextureFromSurface(render, srf);
+		current.textures_array[i] = SDL_CreateTextureFromSurface(render, srf);
 		current.rects[i] = malloc(sizeof(SDL_Rect));
 		if(!current.rects[i])
 		{
@@ -68,7 +66,7 @@ texture initTextureLib(char *path)
 			freeTextureLib(&current);
 			break;
 		}
-		assignRect(current.array_textures[i], current.rects[i]);
+		assignRectToTexture(current.textures_array[i], current.rects[i]);
 		SDL_FreeSurface(srf);
 	}
 	freeStringArray(textures_array, n);
@@ -81,14 +79,14 @@ void freeTextureLib(texture *txr)
 		return;
 	for(int i = 0; i < txr->n; i++)
 	{
-		if(txr->array_textures && txr->array_textures[i])
-			SDL_DestroyTexture(txr->array_textures[i]);
+		if(txr->textures_array && txr->textures_array[i])
+			SDL_DestroyTexture(txr->textures_array[i]);
 		if(txr->rects && txr->rects[i])
 			free(txr->rects[i]);
 	}
-	free(txr->array_textures);
+	free(txr->textures_array);
 	free(txr->rects);
-	txr->array_textures = NULL;
+	txr->textures_array = NULL;
 	txr->rects = NULL;
 	txr->n = 0;
 }
@@ -99,7 +97,7 @@ void quitTexture(void)
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
-void assignRect(SDL_Texture *texture, SDL_Rect *rect)
+void assignRectToTexture(SDL_Texture *texture, SDL_Rect *rect)
 {
 	int w = 0, h = 0;
 	if(!rect || !texture)
@@ -121,6 +119,11 @@ void assignRect(SDL_Texture *texture, SDL_Rect *rect)
 
 void drawImageF(float x, float y, float w, float h, SDL_Texture *texture)
 {
+	if(!texture)
+	{
+		printDebug("Error, no se pudo dibujar la textura\n");
+		return;
+	}
 	int w_, h_;
 	GetTextureSize(texture, &w_, &h_);
 	if(w <= 0 || h <= 0)
@@ -144,6 +147,11 @@ void drawImageF(float x, float y, float w, float h, SDL_Texture *texture)
 
 void drawImage(int x, int y, int w, int h, SDL_Texture *texture)
 {
+	if(!texture)
+	{
+		printDebug("Error, no se pudo dibujar la textura\n");
+		return;
+	}
 	int w_, h_;
 	GetTextureSize(texture, &w_, &h_);
 	if(w <= 0 || h <= 0)
@@ -164,6 +172,13 @@ void drawImage(int x, int y, int w, int h, SDL_Texture *texture)
 	destrect.y = y;
 	SDL_RenderCopy(render, texture, &srcrect, &destrect);
 }
+
+void renderRect(SDL_Rect *rect, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+{
+	SDL_SetRenderDrawColor(render, r, g, b, a);
+	SDL_RenderDrawRect(render, rect);
+}
+
 
 #ifdef IMG_DEBUG
 int main()

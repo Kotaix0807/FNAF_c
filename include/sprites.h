@@ -1,5 +1,7 @@
-#include "SDL_rect.h"
-#include "img.h"
+#ifndef SPRITES_H
+#define SPRITES_H
+
+#include <SDL_image.h>
 #include <stdbool.h>
 
 typedef struct {
@@ -23,8 +25,11 @@ typedef struct {
 } SpriteManager;
 
 extern SpriteManager sprite_manager;
-
-
-
-
-
+/*
+typedef struct {
+    SDL_Rect hitbox;
+    sprite main;
+    animation run;
+}obj;
+*/
+#endif

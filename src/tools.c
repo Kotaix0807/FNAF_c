@@ -13,7 +13,7 @@
 
 //#define TOOLS_DEBUG
 
-int binarySearch(int arr[], int left, int right, int key)
+int recBinarySearch(int arr[], int left, int right, int key)
 {
     if (right >= left)
     {
@@ -23,9 +23,9 @@ int binarySearch(int arr[], int left, int right, int key)
             return mid;
 
         if (arr[mid] > key)
-            return binarySearch(arr, left, mid - 1, key);
+            return recBinarySearch(arr, left, mid - 1, key);
         
-        return binarySearch(arr, mid + 1, right, key);
+        return recBinarySearch(arr, mid + 1, right, key);
     }
     return -1;
 }
@@ -177,6 +177,165 @@ char *typeAdmited(valid_type type)
 void GetTextureSize(SDL_Texture* texture, int* width, int* height)
 {
     SDL_QueryTexture(texture, NULL, NULL, width, height);
+}
+
+SDL_Color setColour(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+{
+    SDL_Color color = {
+        .r = r,
+        .g = g,
+        .b = b,
+        .a = a
+    };
+    return color;
+}
+
+int largestStr(char *arr[], int n)
+{
+    if(n <= 0)
+    {
+        perror("No array length");
+        exit(1);
+    }
+    int max = 0, count = 0;
+    for(int i = 0; i < n; i++)
+    {
+        count = (int)strlen(arr[i]);
+        if(count > max)
+            max = count;
+    }
+    return max;
+}
+
+int largestStr_bra(char *arr[], int n)
+{
+    if(n <= 0)
+    {
+        perror("No array length");
+        exit(1);
+    }
+    int max = 0, count = 0;
+    for(int i = 0; i < n; i++)
+    {
+        count = (int)u8_len(arr[i]);
+        if(count > max)
+            max = count;
+    }
+    return max;
+}
+
+int largestOpt(char *choices[], int n_choice, const char *title)
+{
+    int length = largestStr(choices, n_choice);
+    if(title && length < (int)strlen(title))
+        return (int)strlen(title) + 4;
+    else
+        return length + 6;
+}
+
+unsigned long fileLines(const char *file, int opt)
+{
+    FILE *txt = fopen(file, "r");
+    if(!txt)
+    {
+        printf("Error: file '%s' not found\n", file);
+        return 0;
+    }
+    unsigned long lines_count = 0, char_count = 0, WMAX = 0;
+    int t;
+    while ((t = fgetc(txt)) != EOF)
+    {
+        if (t == '\n' || t == '\r')
+        {
+            if(char_count > WMAX)
+                WMAX = char_count;
+            lines_count++;
+            char_count = 0;
+        }
+        else
+        {
+            char_count++;
+        }
+    }
+    if(lines_count > 1)
+        lines_count++; //Linea adicional porque no existe \n inicial
+    fclose(txt);
+    if (opt == 0)
+        return lines_count;
+    else
+        return WMAX;
+}
+
+char **readText(const char *file)
+{
+    unsigned long lines = fileLines(file, 0);
+    unsigned long chars = fileLines(file, 1);
+    if (lines == 0 || chars == 0)
+        return NULL;
+
+    FILE *txt = fopen(file, "r");
+    if (!txt)
+        return NULL;
+
+    char **arr = calloc(lines, sizeof(char *));
+    if (!arr) {
+        fclose(txt);
+        return NULL;
+    }
+
+    for (unsigned long i = 0; i < lines; i++) {
+        arr[i] = calloc(chars + 2, sizeof(char));
+        if (!arr[i]) {
+            fclose(txt);
+            for (unsigned long j = 0; j < i; j++)
+                free(arr[j]);
+            free(arr);
+            return NULL;
+        }
+        if (!fgets(arr[i], (int)(chars + 2), txt))
+            arr[i][0] = '\0';
+        arr[i][strcspn(arr[i], "\r\n")] = '\0';
+    }
+    fclose(txt);
+    return arr;
+}
+
+size_t u8_len(const char *s)
+{
+    mbstate_t st = {0};
+    size_t count = 0;
+    const char *p = s;
+    wchar_t wc;
+    while (*p)
+    {
+        size_t r = mbrtowc(&wc, p, MB_CUR_MAX, &st);
+        if (r == (size_t)-1 || r == (size_t)-2)
+            break;
+        if (r == 0)
+            break;
+        count++;
+        p += r;
+    }
+    return count;
+}
+
+int replace_fmt(char **arr, int idx, const char *arg)
+{
+    if (!arr || idx < 0 || !arg)
+        return -1;
+
+    const char *tmpl = arr[idx];
+    if (!tmpl)
+        return -1;
+
+    size_t needed = (size_t)snprintf(NULL, 0, tmpl, arg);
+    char *buf = malloc(needed + 1);
+    if (!buf)
+        return -1;
+
+    snprintf(buf, needed + 1, tmpl, arg);
+    arr[idx] = buf;
+    return 0;
 }
 
 #ifdef TOOLS_DEBUG

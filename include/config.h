@@ -11,9 +11,13 @@
 #define SFX_DIR ASSETS_DIR "sfx/"
 #define MUSIC_DIR ASSETS_DIR "music/"
 #define SPRITES_DIR ASSETS_DIR "sprites/"
+#define FONTS_DIR ASSETS_DIR "fonts/"
 #define PATH_SIZE(a) sizeof(SFX_DIR) + sizeof(MUSIC_DIR) + sizeof(a)
 
-#define CFG_FILE "hd.ini"
+#define FOUR_K "4k.ini"
+#define HD "hd.ini"
+
+#define CFG_FILE HD
 
 typedef struct {
     char name[128];
@@ -22,7 +26,8 @@ typedef struct {
     bool fullscreen;
     bool vsync;
     int fps;
-    
+    int defaultMonitor;
+
     int master_volume;
     int music_volume;
     int sfx_volume;
